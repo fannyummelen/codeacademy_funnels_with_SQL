@@ -1,0 +1,60 @@
+SELECT question,
+   COUNT(response IS NOT NULL) AS 	'number of responses'
+FROM survey
+GROUP BY question
+ORDER BY question
+LIMIT 10;
+
+
+SELECT quiz.user_id,
+  home_try_on.user_id IS NOT NULL AS           'is_home_try_on',
+  home_try_on.number_of_pairs,
+  purchase.user_id IS NOT NULL as 'is_purchase'
+FROM quiz
+LEFT JOIN home_try_on
+ON home_try_on.user_id = quiz.user_id
+LEFT JOIN purchase
+ON purchase.user_id = quiz.user_id
+LIMIT 10;
+
+WITH funnel AS (SELECT quiz.user_id,
+    home_try_on.user_id IS NOT NULL AS 'is_home_try_on',
+    home_try_on.number_of_pairs,
+    purchase.user_id IS NOT NULL as 'is_purchase'
+  FROM quiz
+  LEFT JOIN home_try_on
+    ON home_try_on.user_id = quiz.user_id  
+  LEFT JOIN purchase
+    ON purchase.user_id = quiz.user_id
+)
+SELECT 100 * SUM(is_home_try_on) / COUNT(user_id) AS "percent_to_home_try_on",
+  100 * SUM(is_purchase) / SUM(is_home_try_on) AS 'percent_to_purchase'
+FROM funnel;
+
+
+WITH funnel AS (SELECT quiz.user_id,
+    home_try_on.user_id IS NOT NULL AS 'is_home_try_on',
+    home_try_on.number_of_pairs,
+    purchase.user_id IS NOT NULL as 'is_purchase'
+  FROM quiz
+  LEFT JOIN home_try_on
+    ON home_try_on.user_id = quiz.user_id  
+  LEFT JOIN purchase
+    ON purchase.user_id = quiz.user_id
+)
+SELECT number_of_pairs,
+  100 * SUM(is_purchase) / SUM(is_home_try_on) AS 'percent_to_purchase'
+FROM funnel
+WHERE number_of_pairs IS NOT NULL
+GROUP BY number_of_pairs;
+
+SELECT COUNT(*), style, fit, shape, color
+FROM quiz
+GROUP BY style, fit, shape, color
+ORDER BY 1 DESC
+LIMIT 10;
+SELECT model_name, COUNT(*)
+FROM purchase
+GROUP BY model_name
+ORDER BY 2 DESC; 
+
